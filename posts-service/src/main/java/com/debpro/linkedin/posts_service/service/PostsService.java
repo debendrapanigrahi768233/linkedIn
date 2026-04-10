@@ -48,11 +48,11 @@ public class PostsService {
 
     public PostDto getPostById(Long postId) {
 
-        //Testing openfeign
-        Long userId = UserContextHolder.getCurrentUserId();
-        List<PersonDto> firstDegreeConnections = connectionsClient.getFirstConnections();
-
-        //To Do: Send notifications to all the connections
+//        //Testing openfeign
+//        Long userId = UserContextHolder.getCurrentUserId();
+//        List<PersonDto> firstDegreeConnections = connectionsClient.getFirstConnections();
+//
+//        //To Do: Send notifications to all the connections
 
         Post post = postsRepository.findById(postId).orElseThrow(()-> new ResourceNotFoundException("post not found with id: "+postId));
 
