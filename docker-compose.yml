@@ -19,6 +19,20 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
 
+  kafbat-ui:
+    container_name: kafbat-ui
+    image: ghcr.io/kafbat/kafka-ui:latest
+    ports:
+      - 8090:8080
+    depends_on:
+      - kafka
+    networks:
+      - linkedin-network
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_KSQLDBSERVER: http://ksqldb0:8088
+
   notification-db:
     image: postgres
     container_name: notification-db
@@ -31,6 +45,43 @@ services:
     networks:
       - linkedin-network
 
+  posts-db:
+    image: postgres
+    container_name: posts-db
+    environment:
+      - POSTGRES_DB=postsDB
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - "posts-db-data:/var/lib/postgresql"
+    networks:
+      - linkedin-network
+
+  user-db:
+    image: postgres
+    container_name: user-db
+    environment:
+      - POSTGRES_DB=userDB
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - "user-db-data:/var/lib/postgresql"
+    networks:
+      - linkedin-network
+
+  connections-db:
+    image: neo4j
+    container_name: connections-db
+    environment:
+      - NEO4J_AUTH=neo4j/password  #username/password
+    ports:
+      - "7474:7474"            #http port
+      - "7687:7687"            #bolt port
+    volumes:
+      - connections-db-data:/data
+    networks:
+      - linkedin-network
+
   discovery-server:
     image: debendracet123/linked-in/discovery-server
     container_name: discovery-server
@@ -38,6 +89,26 @@ services:
       - linkedin-network
     ports:
       - "8761:8761"
+
+  posts-service:
+    image: debendracet123/linked-in/posts-service
+    container_name: posts-service
+    networks:
+      - linkedin-network
+    depends_on:
+      - discovery-server
+      - posts-db
+      - kafka
+
+  user-service:
+    image: debendracet123/linked-in/user-service
+    container_name: user-service
+    networks:
+      - linkedin-network
+    depends_on:
+      - discovery-server
+      - user-db
+      - kafka
 
   notification-service:
     image: debendracet123/linked-in/notification-service
@@ -49,9 +120,32 @@ services:
       - notification-db
       - kafka
 
+  connections-service:
+    image: debendracet123/linked-in/connections-service
+    container_name: connections-service
+    networks:
+      - linkedin-network
+    depends_on:
+      - discovery-server
+      - connections-db
+      - kafka
+
+  api-gateway:
+    image: debendracet123/linked-in/api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    networks:
+      - linkedin-network
+    depends_on:
+      - discovery-server
+
 networks:
   linkedin-network:
 
 volumes:
   kafka_data:
   notification-db-data:
+  posts-db-data:
+  user-db-data:
+  connections-db-data:
