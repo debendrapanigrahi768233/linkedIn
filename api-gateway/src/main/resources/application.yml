@@ -38,6 +38,6 @@ eureka:
     prefer-ip-address: true
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://discovery-server:8761/eureka
 
 jwt.secretKey: hasbhiabdygqad667wdg6q6wd5qf5qF56Qfs5QD5F5d5wafdsf5qFD5f5d6f5QDQD
