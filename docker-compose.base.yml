@@ -1,0 +1,46 @@
+services:
+  connections-db:
+    image: neo4j
+    container_name: connections-db
+    environment:
+      - NEO4J_AUTH=neo4j/password  #username/password
+    ports:
+      - "7474:7474"            #http port
+      - "7687:7687"            #bolt port
+    volumes:
+      - connections-db-data:/data
+    networks:
+      - linkedin-network
+
+  discovery-server:
+    image: debendracet123/linked-in/discovery-server
+    container_name: discovery-server
+    networks:
+      - linkedin-network
+    ports:
+      - "8761:8761"
+
+  connections-service:
+    image: debendracet123/linked-in/connections-service
+    container_name: connections-service
+    networks:
+      - linkedin-network
+    depends_on:
+      - discovery-server
+      - connections-db
+
+  api-gateway:
+    image: debendracet123/linked-in/api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    networks:
+      - linkedin-network
+    depends_on:
+      - discovery-server
+
+networks:
+  linkedin-network:
+
+volumes:
+  connections-db-data:
